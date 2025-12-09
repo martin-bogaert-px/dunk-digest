@@ -18,7 +18,7 @@ class BBRefAPI:
         self.timeout = 10.0
 
     def _open_page(self, endpoint: str) -> httpx.Response:
-        url = os.path.join(self.base_url, endpoint)
+        url = os.path.join(self.base_url, endpoint + ".html")
 
         with httpx.Client(headers=self.headers, timeout=self.timeout) as client:
             page = client.get(url)
@@ -29,6 +29,8 @@ class BBRefAPI:
         page = self._open_page(endpoint)
         soup = BeautifulSoup(page.content, "lxml")
         table = soup.find("table")
+        while table.find("tr", class_="thead"):
+            table.find("tr", class_="thead").decompose()
         stats = pd.read_html(StringIO(str(table)))[0]
 
         return stats
